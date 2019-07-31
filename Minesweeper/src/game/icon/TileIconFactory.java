@@ -15,11 +15,10 @@ public class TileIconFactory {
 	public ImageIcon generateIcon(TileIcon t) {
 		try {
 			BufferedImage bi = ImageIO.read(getClass().getResource("/assets/panel/" + t + ".png"));
-			return new ImageIcon(bi.getScaledInstance(40, 40, Image.SCALE_SMOOTH));
+			return new ImageIcon(bi);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
-
 }

@@ -15,18 +15,33 @@ import game.icon.TileIcon;
 import game.icon.TileIconContainer;
 
 public class GameTile extends JPanel implements MouseListener{
+	private int row;
+	private int col;
 	private int number;
 	private boolean bomb;
 	private boolean flag;
 	private boolean open;
+	private int size;
 	
-	public GameTile() {
+	public GameTile(int row, int col, int size) {
+		this.row = row;
+		this.col = col;
+		this.size = size;
 		this.number = 0;
 		this.bomb = false;
-		this.flag = false;
+		this.flag = false;		
 		this.setLayout(new BorderLayout());
 		this.addMouseListener(this);
 		this.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+		this.add(new JLabel(TileIconContainer.getInstance().get(TileIcon.MINESWEEPER_X, size)));
+	}
+	
+	public int getRow() {
+		return row;
+	}
+	
+	public int getCol() {
+		return col;
 	}
 
 	public int getNumber() {
@@ -62,21 +77,56 @@ public class GameTile extends JPanel implements MouseListener{
 	}
 
 	public void update() {
-		this.add(new JLabel(TileIconContainer.getInstance().get(TileIcon.MINESWEEPER_X)));
+		this.removeAll();
+		if(this.isFlag()) {
+			this.add(new JLabel(TileIconContainer.getInstance().get(TileIcon.MINESWEEPER_F, size)));	
+		} else if(!this.isOpen()) {
+			this.add(new JLabel(TileIconContainer.getInstance().get(TileIcon.MINESWEEPER_X, size)));
+		} else {
+			if(this.isBomb() && this.isOpen()) {
+				this.add(new JLabel(TileIconContainer.getInstance().get(TileIcon.MINESWEEPER_M, size)));
+			} else {
+				this.add(new JLabel(TileIconContainer.getInstance().get(TileIcon.valueOf("MINESWEEPER_" + this.number), size)));		
+			}
+		}
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent e) {		
+	public void mouseClicked(MouseEvent e) {
+		if(e.getButton() == MouseEvent.BUTTON1) {
+			if(!this.isFlag() && !this.isOpen()) {
+				GamePanel parent = (GamePanel)getParent();
+				parent.open(row, col);
+			}
+		} else if(e.getButton() == MouseEvent.BUTTON3) {
+			if(!this.isOpen()) {
+				GamePanel parent = (GamePanel)getParent();
+				if(this.isFlag()) {
+					parent.reduceFlag();
+					this.setFlag(false);
+				} else {
+					if(parent.addFlag())
+						this.setFlag(true);					
+				}
+				
+				update();
+				parent.updateFlag();
+				parent.revalidate();
+				parent.repaint();
+			}
+		}
 	}
 
 	@Override
 	public void mouseEntered(MouseEvent e) {
-		this.setBorder(BorderFactory.createEmptyBorder());
+		if(!this.isOpen())
+			this.setBorder(BorderFactory.createEmptyBorder());
 	}
 
 	@Override
 	public void mouseExited(MouseEvent e) {
-		this.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
+		if(!this.isOpen())
+			this.setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED));
 		
 	}
 
